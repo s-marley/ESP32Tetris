@@ -8,7 +8,13 @@
 #include <LEDSprites.h>
 #include <LEDText.h>
 #include <FontMatrise.h>
-#include "BluetoothSerial.h"
+
+// Button Input
+enum btnInput {NONE, ROTATE, DOWN, LEFT, RIGHT};
+btnInput currentInput = NONE;
+
+//#include "controlBT.h"// Control via BlueTooth
+#include "controlWS.h"  // Control via WebSocket
 
 #define LED_PIN        5
 #define COLOR_ORDER    GRB
@@ -20,14 +26,9 @@
 // NOTE the '-' sign before the width, this is due to my leds matrix origin being on the right hand side
 cLEDMatrix<MATRIX_WIDTH, -MATRIX_HEIGHT, MATRIX_TYPE> leds;
 
-BluetoothSerial SerialBT;
 
 #define TARGET_FRAME_TIME    15  // Desired update rate, though if too many leds it will just run as fast as it can!
 #define INITIAL_DROP_FRAMES  20  // Start of game block drop delay in frames
-
-// Bluetooth input
-enum btnInput {NONE, ROTATE, DOWN, LEFT, RIGHT};
-btnInput currentInput = NONE;
 
 const uint8_t TetrisIData[] = 
 {
@@ -380,7 +381,7 @@ uint32_t LoopDelayMS, LastLoop;
 void setup()
 {
   Serial.begin(115200);
-  SerialBT.begin("ESP32Tetris");
+  controlSetup();
   
   FastLED.addLeds<CHIPSET, LED_PIN, COLOR_ORDER>(leds[0], leds.Size());
   FastLED.setBrightness(200);
@@ -647,22 +648,5 @@ void loop()
     }
     FastLED.show();
   }
-  if(SerialBT.available()){
-    char keyPress = (char)SerialBT.read();
-    switch(keyPress) {
-      case 'w':
-        currentInput = ROTATE;
-        break;
-      case 'a':
-        currentInput = LEFT;
-        break;
-      case 's':
-        currentInput = DOWN;
-        break;
-      case 'd':
-        currentInput = RIGHT;
-        break;
-    }
-    Serial.println(currentInput);
-  }
+  controlLoop();
 }
