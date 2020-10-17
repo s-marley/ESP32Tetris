@@ -1,4 +1,8 @@
 // TETRIS
+// Based off s-marley https://github.com/s-marley/ESP32Tetris
+// and
+// Aaron Liddiment -https://github.com/AaronLiddiment/LEDSprites/tree/master/examples/Tetris
+
 #include <FastLED.h>
 #include <LEDMatrix.h>
 #include <LEDSprites.h>
