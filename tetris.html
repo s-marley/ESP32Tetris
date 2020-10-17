@@ -1,0 +1,132 @@
+ <html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scaleable=no">
+<title>Tetris</title>
+ <script type="text/javascript" src="http://code.jquery.com/jquery-latest.min.js"></script>
+<script>
+var websocket;
+function start() {
+	$("#controls").hide();
+
+  var hostname = document.getElementById('hostname').value;
+  websocket = new WebSocket('ws://'+hostname+':81/');
+  setStatus("Connecting " + hostname + " ...");
+  $("#connect").hide();
+  websocket.onopen = function(evt) { 
+		  setStatus("Connected!");
+		  console.log('websocket open');
+		  setControlsVisible();
+	  };
+  websocket.onclose = function(evt) { setStatus("Lost connection :("); console.log('websocket close'); };
+  websocket.onerror = function(evt) { setStatus("ERROR: " + evt); console.log(evt); $("#connect").show();};
+  websocket.onmessage =function(event) { console.debug("WebSocket message received:", event); setStatus(event.data) };
+  
+}
+
+</script>
+<style>
+button {
+	width: 8em;
+	height: 8em;
+}
+</style>
+</head>
+<body> 
+<center><h1>Tetris</h1></center>
+
+<div id="connect">
+	<input id="hostname" value="tetris.local"/><input type="button" value="Connect" onClick="start()">
+</div>
+
+<div id="status"></div>
+<div id="controls">
+	<table>
+		<tr>
+			<td></td>
+			<td><button id="up"></button></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td><button id="left"></button></td>
+			<td></td>
+			<td><button id="right"></button></td>
+		</tr>
+		<tr>
+			<td></td>
+			<td><button id="down"></button></td>
+			<td></td>
+		</tr>
+	</table>
+	<!--	<button id="new">NEW Game</button> -->
+</div>
+<script>
+	function setStatus(msg) {
+		$("#status").html(msg);
+	}
+
+	function setControlsVisible() {
+		$("#controls").show();
+	}
+
+function sendCmd(cmd) {
+//	$("#status").innerHTML = cmd;
+	console.log("Sending " + cmd);
+	websocket.send(cmd);
+}
+
+$("#new").click(function(){
+	sendCmd("n");
+});		
+	
+$("#left").click(function(){
+	sendCmd("a");
+});	
+$("#right").click(function(){
+	sendCmd("d");	
+});	
+$("#up").click(function(){
+	sendCmd("w");
+});	
+$("#down").click(function(){
+	sendCmd("s");
+});	
+
+
+$( document ).ready(function(){
+	console.info("Ready");
+
+document.onkeydown = checkKey;
+
+function checkKey(e) {
+
+    e = e || window.event;
+
+    if (e.keyCode == '38') {
+        // up arrow
+	sendCmd("w");
+    }
+    else if (e.keyCode == '40') {
+        // down arrow
+	sendCmd("s");
+    }
+    else if (e.keyCode == '37') {
+       // left arrow
+	sendCmd("a");
+    }
+    else if (e.keyCode == '39') {
+       // right arrow
+	sendCmd("d");
+    }
+    else {
+	    console.log("Code = " + e.keyCode);
+    }
+
+}
+	start();	
+} );
+					
+					
+					
+</script>
+</body>
+</html>
